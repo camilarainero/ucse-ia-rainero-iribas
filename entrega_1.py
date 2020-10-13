@@ -1,6 +1,28 @@
 from simpleai.search import SearchProblem, breadth_first, depth_first, greedy, astar
 from simpleai.search.viewers import WebViewer, BaseViewer, ConsoleViewer
-        
+
+
+'''Estado inicial podria ser
+( 
+(rafaela, (paquetes))
+(sunchales, (paquetes))
+(lehmann, (paquetes))
+(susana, (paquetes))
+(sc_de_saguier, (paquetes))
+(esperanza, (paquetes))
+(recreo, (paquetes))
+(santa_fe, (paquetes))
+(san_vicente, (paquetes))
+(santo_tome, (paquetes))
+(angelica,(paquetes))
+(sauce_viejo(paquetes))
+),
+(
+(camion1,ciudad) 
+(camion2,ciudad) 
+(camion3,ciudad) ..
+)
+'''        
 # Definir ciudades y sus distancias
 DISTANCIAS = {
     ('sunchales', 'lehmann'): 32,
