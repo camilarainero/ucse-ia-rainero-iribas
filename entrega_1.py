@@ -1,28 +1,20 @@
 from simpleai.search import SearchProblem, breadth_first, depth_first, greedy, astar
 from simpleai.search.viewers import WebViewer, BaseViewer, ConsoleViewer
+'''
+voy a recorrer mi estado
+por cada camion
+segun el combustible a que ciudad puedo llegar
+tambien tengo que ver donde estoy para saber que paquetes puedo llevar 
 
+-- si dos camiones estan en la misma ciudad controlar que no agarren los mismos paquetes
+'''
 
-'''Estado inicial podria ser
-( 
-(rafaela, (paquetes))
-(sunchales, (paquetes))
-(lehmann, (paquetes))
-(susana, (paquetes))
-(sc_de_saguier, (paquetes))
-(esperanza, (paquetes))
-(recreo, (paquetes))
-(santa_fe, (paquetes))
-(san_vicente, (paquetes))
-(santo_tome, (paquetes))
-(angelica,(paquetes))
-(sauce_viejo(paquetes))
-),
-(
-(camion1,ciudad) 
-(camion2,ciudad) 
-(camion3,ciudad) ..
-)
-'''        
+def tupla_a_lista(t):
+    return [list(row) for row in t]
+
+def lista_a_tupla(t):
+    return tuple(tuple(row) for row in t)
+
 # Definir ciudades y sus distancias
 DISTANCIAS = {
     ('sunchales', 'lehmann'): 32,
@@ -43,15 +35,25 @@ for (ciudad1, ciudad2), kms in list(DISTANCIAS.items()):
     DISTANCIAS[(ciudad2, ciudad1)] = kms
 
 
-def tupla_a_lista(t):
-    return [list(row) for row in t]
+estado_inicial=[[],[]]
+'''Estructura del estado:
+[ [ (paquete, ciudad_origen, ciudad_destino), ...] , [ (camion,combustible,ciudad), ...] ] 
+'''        
+# Armamos el estado inicial con los parametros
+def armar_estado_inicial(paquetes,camiones):
+    inicial=[[],[]]
+    for p in paquetes: 
+        inicial[0].append(p)
+    for c in camiones:
+        inicial[1].append(c)
 
-def lista_a_tupla(t):
-    return tuple(tuple(row) for row in t)
+    return inicial
+
+sedes=('rafaela','santa_fe')
 
 class ProblemaCamiones(SearchProblem):
 
-    def is_goal(self, state):        
+    def is_goal(self, state):           
 
     def actions(self,state):            
 
@@ -66,7 +68,8 @@ class ProblemaCamiones(SearchProblem):
 
 def planear_camiones(metodo,camiones,paquetes):
     # Armar el estado inicial
-    #INICIAL=
+    estado_inicial=armar_estado_inicial(paquetes,camiones)
+
     
     # visor = ConsoleViewer()
     # visor = WebViewer()
@@ -121,5 +124,6 @@ if __name__ == '__main__':
         ('p4', 'recreo', 'san_vicente'),
     ],
     )
+    #result = planear_camiones()
 
 	#result = planear_camiones('breadth_first', camiones, paquetes)
