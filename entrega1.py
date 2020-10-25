@@ -47,7 +47,8 @@ class ProblemaCamiones(SearchProblem):
 
     def is_goal(self, state):    
     #El problema termina cuando todos los paqetes estan en su ciudad destino y los camiones estan en alguna sede       
-        paquetes,camiones=state
+        nuevo_estado = state 
+        paquetes,camiones= nuevo_estado
      
         for p in paquetes:
             if p[1]!=p[2]: #Verificamos que todos los paquetes estan en ciudad destino 
@@ -60,73 +61,106 @@ class ProblemaCamiones(SearchProblem):
 
 
     def actions(self,state):    
-        # La accion va a ser registrar los viajes, donde voy a tener que: 
-        #   Mover camion de una ciudad a otra
-        #   Llevar tales paquetes 
-        #   Descontando o incrementando combustible.  
-        # Estructura de la acción: [ [(camion), (ciudad),(combustible que me lleva moverme a la ciudad),(paquetes)] ] 
+
+        # Estructura de la acción: 
+        # [ [(camion), (ciudad),(combustible que me lleva moverme a la ciudad),(paquetes)] ] 
         # ejemplo = [ ['c1','rafaela',0.5],['p1','p2','p3'] ]
         paquetes,camiones=state 
-        
-        for c in camiones:
-            camion,ciudad,combustible=c
-            acciones=[]
-            paquetes_llevo=[]
+        acciones=[]
 
-            for ciudades,distancia in DISTANCIAS.items():
+        #Podemos ver de restringir las accione sposibles preguntando si me alcanza el combustible si no alcanza no la agrego
+
+        for c in camiones:
+            camion,ciudad,combustible=c                    
+
+            #Por cada camion recorro Distancias y busco hacia donde se puede mover en funcion de la ciudad donde esta
+            for ciudades,distancia in DISTANCIAS.items(): 
+                accion_c=[] #accion_c es accio del camion (camion, ciudad, combustible)
+                paquetes_llevo=[]
                 ciudad_actual,ciudad_destino=ciudades
                 if ciudad == ciudad_actual:
                     destino=ciudad_destino
                     combustible_que_gasto=(distancia/100)
-                    acciones[0].append(c,destino,combustible_que_gasto)
-                    
+                    #accion_c.append( [ c[0] , destino , combustible_que_gasto ] )                   
+                    accion_c.append(c[0])
+                    accion_c.append(destino)
+                    accion_c.append(combustible_que_gasto)
+
                     for p in paquetes:
                         if p[1]==ciudad:
                             paquetes_llevo.append(p[0])
-                            
-                    acciones[1].append(paquetes_llevo)
+                    
+                    acciones.append([accion_c,paquetes_llevo])     
+                  
         return acciones
            
         
-    def cost(self, state,action,state2):    
+    def cost(self, state,action,state2):  
+
         return 1    
 
     def result(self, state, action):
-        #Tiene que ser una tupla
-        print ('result')
+        # Tiene que ser una tupla        
+        # El result tiene que: 
+        #   Mover camion de una ciudad a otra 
+        #   Llevar los paquetes 
+        #   Descontar o incrementar combustible.        
+        
+        paquetes,camiones=state      
+        camiones_estado=tupla_a_lista(camiones)
+        paquetes_estado =tupla_a_lista(paquetes)
+        
+        camion, paquetes_lleva=action
+
+        camion_elegido=camion[0]
+        destino=camion[1]
+        combustible_restar=camion[2]
+        
+        for c in camiones_estado:
+            if camion_elegido==c[0]: #Busco el camion que se tiene que mover             
+                c[1]=destino #Es lo que despues voy a reemplazar en el estado ciudad                
+                c[2]=c[2]-combustible_restar #Es lo que despues voy a reemplazar en el estado combustible
+                
+        for pll in paquetes_lleva: #Busco los paquetes que tiene que mover
+            for p in paquetes_estado:
+                if p[0]==pll: #Si son iguales lo reemplazo en el estado
+                    p[1]=destino
+
+        estado = (lista_a_tupla(paquetes_estado),lista_a_tupla(camiones_estado))
+        print("estado",estado)
+        print("estado tupla",lista_a_tupla(estado))
+
+        return lista_a_tupla(estado)   
         
 
     def heuristic(self, state):
         return 1
      
 
-
-def planear_camiones(metodo,camiones,paquetes):
+def planear_camiones(metodo, camiones, paquetes):
     # Armar el estado inicial
     estado_inicial=armar_estado_inicial(paquetes,camiones)
-    
-    # visor = ConsoleViewer()
-    # visor = WebViewer()
 
     # Llamamos al problema y le pasamos el estado inicial
     problema = ProblemaCamiones(lista_a_tupla(estado_inicial))
 
-    '''
     funciones = {
         'breadth_first': breadth_first,
         'depth_first': depth_first,
         'greedy': greedy,
         'astar': astar
     }
-    funcion_busqueda = funciones[metodo_busqueda]
+    funcion_busqueda = funciones[metodo]
 
-    resultado = funcion_busqueda(problema, graph_search=True)#,viewer=visor)
-    # print (resultado)
-    # print (resultado.path)
-    '''
-    resultado=problema
+    result = funcion_busqueda(problema)
     
-    return resultado
+    print (result)
+    print (result.path)
+    #itinerario = ...armar el itinerario en base a la solución encontrada en result, leyendo result.path(), etc...
+    
+    return result
+    
+ 
 
 
 if __name__ == '__main__':
@@ -135,15 +169,10 @@ if __name__ == '__main__':
 	#viewer = ConsoleViewer()
 	#viewer = None
 	#viewer = BaseViewer()
-
-	#metodo = "greedy"
-	#metodo = "breadth_first"
-	#metodo = "astar"
-	#metodo = "depth_first"
 	    
     itinerario = planear_camiones(
     # método de búsqueda a utilizar. Puede ser: astar, breadth_first, depth_first, uniform_cost o greedy
-    metodo="astar",
+    metodo="breadth_first",
     camiones=[
     # id, ciudad actual, y capacidad de combustible máxima (litros)
         ('c1', 'rafaela', 1.5),
@@ -160,7 +189,3 @@ if __name__ == '__main__':
     )
     print ('EL RESULTADO ES')
     print (itinerario)
-
-    #result = planear_camiones()
-
-	#result = planear_camiones('breadth_first', camiones, paquetes)
