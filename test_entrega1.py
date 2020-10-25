@@ -89,10 +89,10 @@ CAMION_INUTIL = "c_inutil", "rafaela", 0.002
 
 PAQUETE_NORMAL = "p_normal", "rafaela", "lehmann"
 PAQUETE_NORMAL2 = "p_normal2", "rafaela", "lehmann"
-PAQUETE_INVERTIDO = "p_invertido", "lehmann", "rafaela"
-PAQUETE_OPUESTO = "p_opuesto", "rafaela", "susana"
+PAQUETE_INVERTIDO = "p_invertido", "lehmann", "rafaela" 
+PAQUETE_OPUESTO = "p_opuesto", "rafaela", "susana" 
 PAQUETE_PASANDO_NORMAL = "p_pasando_normal", "rafaela", "sunchales"
-PAQUETE_MOLESTO = "p_molesto", "sunchales", "susana"
+PAQUETE_MOLESTO = "p_molesto", "sunchales", "susana" 
 PAQUETE_MUY_LEJOS = "p_lejos", "sunchales", "sauce_viejo"
 PAQUETE_COSTERO = "p2", "santo_tome", "recreo"
 

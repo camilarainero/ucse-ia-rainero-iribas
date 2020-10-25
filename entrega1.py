@@ -1,4 +1,4 @@
-from simpleai.search import SearchProblem, breadth_first, depth_first, greedy, astar
+from simpleai.search import SearchProblem, breadth_first, depth_first, greedy, astar, uniform_cost
 from simpleai.search.viewers import WebViewer, BaseViewer, ConsoleViewer
 
 def tupla_a_lista(t):
@@ -86,9 +86,7 @@ class ProblemaCamiones(SearchProblem):
                 ciudad_actual,ciudad_destino=ciudades
                 if ciudad == ciudad_actual:
                     destino=ciudad_destino
-                    combustible_que_gasto=(distancia/100)                 
-                   
-                  
+                    combustible_que_gasto=(distancia/100)             
 
                     if combustible_que_gasto <= combustible:
                         #accion_c.append( [ c[0] , destino , combustible_que_gasto ] )                   
@@ -99,10 +97,8 @@ class ProblemaCamiones(SearchProblem):
                         for p in paquetes:
                             if p[1]==ciudad:
                                 if p[1]!=p[2]: #Si el paquete llego a destino no lo muevo
-                                    paquetes_llevo.append(p[0])
-                                else:
-                                    print("pruebita")                    
-                        acciones.append([accion_c,paquetes_llevo])     
+                                    paquetes_llevo.append(p[0])                
+                        acciones.append([accion_c,paquetes_llevo])    
                   
         return acciones
            
@@ -146,8 +142,8 @@ class ProblemaCamiones(SearchProblem):
                     p[1]=destino
 
         estado = (lista_a_tupla(paquetes_estado),lista_a_tupla(camiones_estado))
-        print ("Accion", action)
-        print("Estado",estado)
+        #print ("Accion", action)
+        #print("Estado",estado)
         
 
         return lista_a_tupla(estado)   
@@ -178,6 +174,7 @@ def planear_camiones(metodo, camiones, paquetes):
     funciones = {
         'breadth_first': breadth_first,
         'depth_first': depth_first,
+        'uniform_cost': uniform_cost,
         'greedy': greedy,
         'astar': astar
     }
@@ -233,20 +230,21 @@ if __name__ == '__main__':
 	    
     itinerario = planear_camiones(
     # método de búsqueda a utilizar. Puede ser: astar, breadth_first, depth_first, uniform_cost o greedy
-    metodo="astar",
-    camiones=[
+    metodo="astar", 
+	camiones=[
     # id, ciudad actual, y capacidad de combustible máxima (litros)
         ('c1', 'rafaela', 1.5),
-        ('c2', 'rafaela', 2),
-        ('c3', 'santa_fe', 2),
     ],
     paquetes=[
         # id, ciudad de origen, y ciudad de destino
-        ('p1', 'rafaela', 'angelica'),
-        ('p2', 'rafaela', 'santo_tome'),
-        ('p3', 'esperanza', 'susana'),
-        ('p4', 'recreo', 'san_vicente'),
+        ('p1', 'rafaela', 'lehmann'),
+        ('p2', 'rafaela', 'lehmann'),
+        ('p3', 'rafaela', 'sunchales'),
+        ('p4', 'lehmann', 'rafaela'),
+		('p5', 'sunchales', 'susana'),
+		('p6', 'rafaela', 'susana'),
     ],
     )
+        
     print ('EL RESULTADO ES')
     print (itinerario)
