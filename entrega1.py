@@ -1,5 +1,6 @@
 from simpleai.search import SearchProblem, breadth_first, depth_first, greedy, astar, uniform_cost
 from simpleai.search.viewers import WebViewer, BaseViewer, ConsoleViewer
+from itertools import combinations
 
 def tupla_a_lista(t):
     return [list(row) for row in t]
@@ -26,7 +27,6 @@ DISTANCIAS = {
 for (ciudad1, ciudad2), kms in list(DISTANCIAS.items()):
     DISTANCIAS[(ciudad2, ciudad1)] = kms
 
-
 estado_inicial=[[],[]]
 '''Estructura del estado:
 [ [ (paquete, ciudad_actual, ciudad_destino), ...] , [ (camion,combustible,ciudad), ...] ] 
@@ -38,7 +38,6 @@ def armar_estado_inicial(paquetes,camiones):
         inicial[0].append(p)
     for c in camiones:
         inicial[1].append(c)
-
     return inicial
 
 sedes=('rafaela','santa_fe')
@@ -48,7 +47,6 @@ def guardar_capacidad(camiones):
     for c in camiones:
         capacidad.append([c[0],c[2]])
     
-
 class ProblemaCamiones(SearchProblem):
 
     def is_goal(self, state):    
@@ -59,7 +57,7 @@ class ProblemaCamiones(SearchProblem):
         for p in paquetes:
             if p[1]!=p[2]: #Verificamos que todos los paquetes estan en ciudad destino 
                 return False
- 
+
         for c in camiones:
             if c[1] not in sedes: #Verificamos que todos los camiones esten en alguna sede
                 return False
@@ -67,7 +65,6 @@ class ProblemaCamiones(SearchProblem):
 
 
     def actions(self,state):    
-
         # Estructura de la acción: 
         # [ [(camion), (ciudad),(combustible que me lleva moverme a la ciudad),(paquetes)] ] 
         # ejemplo = [ ['c1','rafaela',0.5],['p1','p2','p3'] ]
@@ -77,34 +74,47 @@ class ProblemaCamiones(SearchProblem):
         #Podemos ver de restringir las accione sposibles preguntando si me alcanza el combustible si no alcanza no la agrego
 
         for c in camiones:
-            camion,ciudad,combustible=c                    
+            # Por cada camion recorro Distancias y busco hacia donde se puede 
+            # mover segun la ciudad donde esta.
+            camion,ciudad,combustible=c               
 
-            #Por cada camion recorro Distancias y busco hacia donde se puede mover en funcion de la ciudad donde esta
             for ciudades,distancia in DISTANCIAS.items(): 
-                accion_c=[] #accion_c es accio del camion (camion, ciudad, combustible)
+                accion_c=[] #accion_c es accion del camion (camion, ciudad, combustible)
                 paquetes_llevo=[]
                 ciudad_actual,ciudad_destino=ciudades
-                if ciudad == ciudad_actual:
-                    destino=ciudad_destino
-                    combustible_que_gasto=(distancia/100)             
+                if ciudad == ciudad_actual: #Si la ciudad del camion es igual a la ciudad de la distancia
+                    destino=ciudad_destino #Destino es la ciudad a donde el camion puede ir
+                    combustible_que_gasto=(distancia/100) #combusible que le lleva     
 
-                    if combustible_que_gasto <= combustible:
+                    if combustible_que_gasto <= combustible: #Si el combustible que llevaria ir es menor al que tiene
                         #accion_c.append( [ c[0] , destino , combustible_que_gasto ] )                   
-                        accion_c.append(c[0])
-                        accion_c.append(destino)
-                        accion_c.append(combustible_que_gasto)
+                        accion_c.append(c[0]) #Guardo que camion es
+                        accion_c.append(destino) #Guardo a donde va 
+                        accion_c.append(combustible_que_gasto) #Guardo que combustible le insume
 
+                        #acciones.append([accion_c,[]])
+
+                        #Agregamos todos los paquetes que puede llevar
                         for p in paquetes:
-                            if p[1]==ciudad:
+                            if p[1]==ciudad: #Si Esta en la ciudad del camion
                                 if p[1]!=p[2]: #Si el paquete llego a destino no lo muevo
                                     paquetes_llevo.append(p[0])                
-                        acciones.append([accion_c,paquetes_llevo])    
-                  
+                        acciones.append([accion_c,paquetes_llevo])
+
+                        #Agregamos combinaciones de paquetes para que lleve 
+                        paquetess=tuple(paquetes_llevo)
+                        for p in range(2,len(paquetess)):
+                            if p != 0:
+                                combinaciones_paquetes= combinations(paquetess,p)
+                                for cp in combinaciones_paquetes:
+                                    acciones.append([accion_c,list(cp)])                 
+
         return acciones
            
         
     def cost(self,state,action,state2):  
         #print(action[0][2])
+        #print("Costo",action[0][2])
         return action[0][2]   
 
     def result(self, state, action):
@@ -132,7 +142,7 @@ class ProblemaCamiones(SearchProblem):
                         if cap[0]==camion_elegido:
                             c[2]=cap[1]
                 else:
-                    c[2]=c[2]-combustible_restar #Es lo que despues voy a reemplazar en el estado combustible
+                    c[2]=round(c[2],2)-round(combustible_restar,2) #Es lo que despues voy a reemplazar en el estado combustible
                     if c[2]<0:
                         c[2]=0
                 
@@ -158,7 +168,7 @@ class ProblemaCamiones(SearchProblem):
         for p in paquetes_estado:
             if p[1]!=p[2]:
                 cantidad_paquetes_faltan_llegar+=1
-            
+        #print("Heuristica",cantidad_paquetes_faltan_llegar)
         return cantidad_paquetes_faltan_llegar
      
 
@@ -169,7 +179,7 @@ def planear_camiones(metodo, camiones, paquetes):
     guardar_capacidad(camiones)
     # Llamamos al problema y le pasamos el estado inicial
     problema = ProblemaCamiones(lista_a_tupla(estado_inicial))
-    print(lista_a_tupla(estado_inicial))
+    #print(lista_a_tupla(estado_inicial))
 
     funciones = {
         'breadth_first': breadth_first,
@@ -180,7 +190,7 @@ def planear_camiones(metodo, camiones, paquetes):
     }
     funcion_busqueda = funciones[metodo]
 
-    result = funcion_busqueda(problema)#, graph_search=True,viewer=WebViewer())
+    result = funcion_busqueda(problema, graph_search=True)#,viewer=WebViewer())
     itinerario=[]
     #Armar itinerario
     for action,state in result.path():
